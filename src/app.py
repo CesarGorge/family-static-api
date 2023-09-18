@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, url_for
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from datastructures import FamilyStructure
+import json
 #from models import Person
 
 app = Flask(__name__)
@@ -26,18 +27,38 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/members', methods=['GET'])
-def handle_hello():
+def get_all_members():
 
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
+    return jsonify(members), 200
 
+@app.route('/member/<int:id>', methods=['GET'])
+def get_one_member(id):
+    member = jackson_family.get_member(id)
+    if member:
+        return jsonify(member), 200
+    else:
+        return jsonify({"error": "Miembro con ID {} no encontrado".format(id)}), 404
 
-    return jsonify(response_body), 200
+@app.route('/member', methods=['POST'])
+def add_member():
+    # fill this method and update the return
+    try:
+        request_body = json.loads(request.data)
+        jackson_family.add_member(request_body)
+        return jsonify({"message": "Miembro agregado con éxito"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
+@app.route('/member/<int:id>', methods=['DELETE'])
+def delete_member(id):
+    # fill this method and update the return
+    success = jackson_family.delete_member(id)
+    if success:
+        return jsonify({"message": "Miembro eliminado con éxito"}), 200
+    else:
+        return jsonify({"error": "Miembro no encontrado"}), 404
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
