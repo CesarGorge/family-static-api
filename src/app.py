@@ -34,7 +34,7 @@ def get_all_members():
     return jsonify(members), 200
 
 @app.route('/member/<int:id>', methods=['GET'])
-def get_one_member(id):
+def get_member(id):
     member = jackson_family.get_member(id)
     if member:
         return jsonify(member), 200
@@ -43,8 +43,14 @@ def get_one_member(id):
 
 @app.route('/member', methods=['POST'])
 def add_member():
-    # fill this method and update the return
     try:
+        request_data = request.get_json()
+        # Verifica si el campo 'id' está presente en la solicitud
+        if 'id' not in request_data:
+            return jsonify({"error": "El campo 'id' es obligatorio"}), 400
+        # Obtiene el valor del campo 'id' desde la solicitud
+        member_id = request_data['id']
+    # fill this method and update the return
         request_body = json.loads(request.data)
         jackson_family.add_member(request_body)
         return jsonify({"message": "Miembro agregado con éxito"}), 200
@@ -56,7 +62,8 @@ def delete_member(id):
     # fill this method and update the return
     success = jackson_family.delete_member(id)
     if success:
-        return jsonify({"message": "Miembro eliminado con éxito"}), 200
+        response_data = {"done": True}
+        return jsonify(response_data), 200
     else:
         return jsonify({"error": "Miembro no encontrado"}), 404
 # this only runs if `$ python src/app.py` is executed
